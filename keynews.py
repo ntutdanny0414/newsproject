@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 from bs4 import BeautifulSoup
 import requests
-import time
-from pprint import pprint
+#import time
+#from pprint import pprint
 class news:
     def __init__(self, keyWord):
         self.keyWord = keyWord
@@ -45,15 +45,50 @@ class news:
                 self.news.append(self.singleNews)
                 self.singleNews = {'title':'', 'time':'', 'content':'', 'resource':'', 'url':''}
                 print('hihi')
-                time.sleep(3)
+#                time.sleep(3)
         except:
             print('oh~oh~')
     def Start(self):
         self.newsurl()
         self.CrawlAllNews()
+import jieba
+from wordcloud import WordCloud ,ImageColorGenerator
+from scipy.misc import imread  # 處理圖的函数
+from collections import Counter
+import matplotlib.pyplot as plt
+frame = imread('trump.png')  # 圖片
+jieba.case_sensitive = True # 可控制對於詞彙中的英文部分是否為case sensitive, 預設False
+stopwords = []
+with open('stopWords.txt', 'r', encoding='UTF-8') as file:
+    for data in file.readlines():
+        data = data.strip()
+        stopwords.append(data)
+
+class jiebacut:
+    def __init__(self, content,keyWord):
+        self.content = content
+        self.keyWord = keyWord
+        self.data = []
+    def cut(self,num):
+        seg_list = jieba.cut(self.content[num]['content'].replace(' ',''))
+        self.data.extend(seg_list)
+        self.data = list(filter(lambda a: a not in stopwords and a != '\n', self.data))
+    def make(self):
+        for i in range(0, len(self.content)):
+            self.cut(i)
+        sorted(Counter(self.data).items(), key=lambda x:x[1], reverse=True)
+        font = r'C:\Windows\Fonts\kaiu.ttf'#chinese
+        wc = WordCloud(background_color="white",font_path=font,mask=frame,max_font_size=200, random_state=42,stopwords=stopwords,max_words=500)#collocations=False
+        wc.generate_from_frequencies(frequencies=Counter(self.data))
+        image_colors = ImageColorGenerator(frame)#對應顏色
+        plt.figure()
+        plt.imshow(wc.recolor(color_func=image_colors))
+        plt.axis('off')
+        wc.to_file(self.keyWord+'.png')#save
 def main():
     keyWord = input("請輸入關鍵字: ")
     find = news(keyWord)
     find.Start()
-    pprint(find.news)
+    wordcloud = jiebacut(find.news,keyWord)
+    wordcloud.make()
 main()
