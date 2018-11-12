@@ -52,6 +52,7 @@ class news:
         self.newsurl()
         self.CrawlAllNews()
 import jieba
+import jieba.analyse
 from wordcloud import WordCloud ,ImageColorGenerator
 from scipy.misc import imread  # 處理圖的函数
 from collections import Counter
@@ -70,8 +71,11 @@ class jiebacut:
         self.keyWord = keyWord
         self.data = []
     def cut(self,num):
-        seg_list = jieba.cut(self.content[num]['content'].replace(' ',''))
-        self.data.extend(seg_list)
+#        seg_list = jieba.cut(self.content[num]['content'].replace(' ',''))
+#        self.data.extend(seg_list)
+        seg_list = jieba.analyse.extract_tags(self.content[num]['content'].replace(' ',''), topK=30, withWeight=True, allowPOS=())
+        for i in range(0,len(seg_list)):
+            self.data.append(seg_list[i][0])
         self.data = list(filter(lambda a: a not in stopwords and a != '\n', self.data))
     def make(self):
         for i in range(0, len(self.content)):
