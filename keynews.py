@@ -57,7 +57,15 @@ from wordcloud import WordCloud ,ImageColorGenerator
 from scipy.misc import imread  # 處理圖的函数
 from collections import Counter
 import matplotlib.pyplot as plt
-frame = imread('trump.png')  # 圖片
+
+from PIL import Image
+import numpy as np
+from io import BytesIO
+def getimage(url):#要白底
+    response = requests.get(url)
+    img = np.array(Image.open(BytesIO(response.content)))
+    return img
+#frame = imread('trump.png')圖片
 jieba.case_sensitive = True # 可控制對於詞彙中的英文部分是否為case sensitive, 預設False
 stopwords = []
 with open('stopWords.txt', 'r', encoding='UTF-8') as file:
@@ -66,9 +74,10 @@ with open('stopWords.txt', 'r', encoding='UTF-8') as file:
         stopwords.append(data)
 
 class jiebacut:
-    def __init__(self, content,keyWord):
+    def __init__(self, content,keyWord,frame):
         self.content = content
         self.keyWord = keyWord
+        self.frame = frame
         self.data = []
     def cut(self,num):
 #        seg_list = jieba.cut(self.content[num]['content'].replace(' ',''))
@@ -82,17 +91,19 @@ class jiebacut:
             self.cut(i)
         sorted(Counter(self.data).items(), key=lambda x:x[1], reverse=True)
         font = r'C:\Windows\Fonts\kaiu.ttf'#chinese
-        wc = WordCloud(background_color="white",font_path=font,mask=frame,max_font_size=200, random_state=42,stopwords=stopwords,max_words=500)#collocations=False
+        wc = WordCloud(background_color="white",font_path=font,mask=self.frame,max_font_size=200, random_state=42,stopwords=stopwords,max_words=500)#collocations=False
         wc.generate_from_frequencies(frequencies=Counter(self.data))
-        image_colors = ImageColorGenerator(frame)#對應顏色
+        image_colors = ImageColorGenerator(self.frame)#對應顏色 #需要去背
         plt.figure()
         plt.imshow(wc.recolor(color_func=image_colors))
         plt.axis('off')
         wc.to_file(self.keyWord+'.png')#save
 def main():
     keyWord = input("請輸入關鍵字: ")
+    imageurl = input("合成圖片: ")
     find = news(keyWord)
     find.Start()
-    wordcloud = jiebacut(find.news,keyWord)
+    frame = getimage(imageurl)
+    wordcloud = jiebacut(find.news,keyWord,frame)
     wordcloud.make()
 main()
