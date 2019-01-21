@@ -54,7 +54,7 @@ class news:
 import jieba
 import jieba.analyse
 from wordcloud import WordCloud ,ImageColorGenerator
-from scipy.misc import imread  # 處理圖的函数
+#from scipy.misc import imread  # 處理圖的函数
 from collections import Counter
 import matplotlib.pyplot as plt
 
@@ -91,9 +91,9 @@ class jiebacut:
             self.cut(i)
         sorted(Counter(self.data).items(), key=lambda x:x[1], reverse=True)
         font = r'C:\Windows\Fonts\kaiu.ttf'#chinese
-        wc = WordCloud(background_color="white",font_path=font,mask=self.frame,max_font_size=200, random_state=42,stopwords=stopwords,max_words=500)#collocations=False
+        wc = WordCloud(background_color="white",font_path=font,mask=self.frame,random_state=42,stopwords=stopwords,max_words=500)#collocations=False,,max_font_size=200
         wc.generate_from_frequencies(frequencies=Counter(self.data))
-        image_colors = ImageColorGenerator(self.frame)#對應顏色 #需要去背
+        image_colors = ImageColorGenerator(self.frame,(255,255,255))#對應顏色 #需要去背
         plt.figure()
         plt.imshow(wc.recolor(color_func=image_colors))
         plt.axis('off')
